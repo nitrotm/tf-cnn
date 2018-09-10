@@ -1,0 +1,106 @@
+#!/bin/bash
+
+
+usage() {
+  echo "usage: task-predict [--device DEV] [--batch N] [--epochs N] [--verbose] [--checkpoint id] modeldir source [source ...]"
+  echo
+  echo "arguments:"
+  echo
+  echo "  modeldir          : model storage directory"
+  echo "  source            : prediction dataset(s) and/or image folder path(s)"
+  echo
+  echo "prediction options:"
+  echo
+  echo "  --device DEV      : tensorflow device"
+  echo "  --batch N         : prediction batch size"
+  echo "  --epochs N        : prediction epochs (only for raw images)"
+  echo "  --verbose         : output detailed summaries"
+  echo "  --checkpoint ID   : use specific checkpoint"
+}
+
+
+MODEL=
+TMPMODEL=tmp-$(date +%Y%m%d%H%M%S)
+SOURCES=
+
+if [ -f "/proc/driver/nvidia/version" ]
+then
+  DEVICE="/gpu:0"
+else
+  DEVICE="/cpu:0"
+fi
+BATCH_SIZE=1
+EPOCHS=1
+VERBOSE=
+
+CHECKPOINT=
+
+while [ $# -ge 2 ]
+do
+  case "$1" in
+    --device)
+      DEVICE=$2
+      shift 2
+      ;;
+    --batch)
+      BATCH_SIZE=$2
+      shift 2
+      ;;
+    --epochs)
+      EPOCHS=$2
+      shift 2
+      ;;
+    --verbose)
+      VERBOSE=$1
+      shift
+      ;;
+    --checkpoint)
+      CHECKPOINT=$2
+      shift 2
+      ;;
+    *)
+      MODEL=$1
+      shift
+      SOURCES=$@
+      shift $#
+      ;;
+  esac
+done
+if [ $# -gt 0 -o "x$MODEL" = "x" -o "x$SOURCES" = "x" ]
+then
+  usage
+  exit 1
+fi
+if [ ! -f "$MODEL/checkpoint" ]
+then
+  echo "ERROR: no model checkpoint available"
+  exit 2
+fi
+if [ "x$CHECKPOINT" = "x" ]
+then
+  CHECKPOINT=$(cat "$MODEL/checkpoint" | grep -E '^model_checkpoint_path' | grep -o -E '[^ ]+$' | grep -o -E '[^"]+')
+fi
+if [ ! -f "$MODEL/$CHECKPOINT.meta" ]
+then
+  echo "ERROR: model checkpoint not found ($CHECKPOINT)"
+  exit 3
+fi
+
+
+echo "MODEL: importing checkpoint $CHECKPOINT from $MODEL to $TMPMODEL..."
+mkdir -p $TMPMODEL
+cp -p $MODEL/{graph.pbtxt,parameters.json,topology.yaml,$CHECKPOINT.meta,$CHECKPOINT.index,$CHECKPOINT.data*} $TMPMODEL/
+echo "model_checkpoint_path: \"$CHECKPOINT\"" > $TMPMODEL/checkpoint
+
+
+python3 src/run.py predict \
+  --device $DEVICE \
+  --batch $BATCH_SIZE \
+  --epochs $EPOCHS \
+  $VERBOSE \
+  $TMPMODEL \
+  $SOURCES
+
+
+echo "MODEL: cleanup $TMPMODEL..."
+rm -rf $TMPMODEL

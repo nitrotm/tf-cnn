@@ -1,0 +1,266 @@
+#!/bin/bash
+
+
+usage() {
+  echo "usage: task-train [options] topology.yaml eval.tfr train.tfr [train.tfr...]"
+  echo
+  echo "arguments:"
+  echo
+  echo "  topology.yaml         : model topology definition"
+  echo "  eval.tfr              : evaluation dataset"
+  echo "  train.tfr             : training dataset(s)"
+  echo
+  echo "general options:"
+  echo
+  echo "  --tensorboard         : launch tensorboard while training"
+  echo
+  echo "training options:"
+  echo
+  echo "  --config FILE         : read configuration parameters from file"
+  echo "  --model DIR           : model storage directory"
+  echo "  --device DEV          : tensorflow device"
+  echo "  --batch N             : training batch size"
+  echo "  --steps N             : training steps per epoch"
+  echo "  --epochs N            : training/eval epochs"
+  echo "  --ram                 : load dataset in ram"
+  echo "  --verbose             : output detailed summaries"
+  echo
+  echo "model options:"
+  echo
+  echo "  --initializer FN      : kernel initializer function"
+  echo "  --regularizer FN      : kernel regularizer function"
+  echo "  --constraint FN       : kernel constraint function"
+  echo "  --activation FN       : kernel activation function"
+  echo "  --lrn RADIUS          : local response normalization radius"
+  echo "  --bn                  : enable batch normalization"
+  echo "  --dropoutrate RATE    : dropout layer rate"
+  echo "  --labelweight W       : loss label weight"
+  echo "  --loss FN             : loss function"
+  echo "  --optimizer FN        : optimizer function"
+  echo "  --learningrate RATE   : learning rate"
+  echo "  --learningdecay DECAY : learning rate decay"
+}
+
+
+TOPOLOGY=
+DATASET_EVAL=
+DATASET_TRAIN=
+
+TENSORBOARD=0
+VERBOSE=
+RAM=
+
+MODEL=models/unamed/$(date +%Y%m%d%H%M%S)
+if [ -f "/proc/driver/nvidia/version" ]
+then
+  DEVICE="/gpu:0"
+else
+  DEVICE="/cpu:0"
+fi
+BATCH_SIZE=1
+STEPS=1
+EPOCHS=1
+INITIALIZER=none
+REGULARIZER=none
+CONSTRAINT=none
+ACTIVATION=sigmoid
+LRN_RADIUS=0
+BATCHNORM=
+DROPOUT_RATE=0.0
+LABEL_WEIGHT=0.0
+LOSS=abs
+OPTIMIZER=gd
+LEARNING_RATE=0.001
+LEARNING_RATE_DECAY=0.0
+
+while [ $# -ge 2 ]
+do
+  case "$1" in
+    --tensorboard)
+      TENSORBOARD=1
+      shift
+      ;;
+    --verbose)
+      VERBOSE=$1
+      shift
+      ;;
+    --ram)
+      RAM=$1
+      shift
+      ;;
+    --config)
+      source $2
+      shift 2
+      ;;
+    --model)
+      MODEL=$2
+      shift 2
+      ;;
+    --device)
+      DEVICE=$2
+      shift 2
+      ;;
+    --batch)
+      BATCH_SIZE=$2
+      shift 2
+      ;;
+    --steps)
+      STEPS=$2
+      shift 2
+      ;;
+    --epochs)
+      EPOCHS=$2
+      shift 2
+      ;;
+    --initializer)
+      INITIALIZER=$2
+      shift 2
+      ;;
+    --regularizer)
+      REGULARIZER=$2
+      shift 2
+      ;;
+    --constraint)
+      CONSTRAINT=$2
+      shift 2
+      ;;
+    --activation)
+      ACTIVATION=$2
+      shift 2
+      ;;
+    --lrn)
+      LRN_RADIUS=$2
+      shift 2
+      ;;
+    --bn)
+      BATCHNORM=$1
+      shift
+      ;;
+    --dropoutrate)
+      DROPOUT_RATE=$2
+      shift 2
+      ;;
+    --labelweight)
+      LABEL_WEIGHT=$2
+      shift 2
+      ;;
+    --loss)
+      LOSS=$2
+      shift 2
+      ;;
+    --optimizer)
+      OPTIMIZER=$2
+      shift 2
+      ;;
+    --learningrate)
+      LEARNING_RATE=$2
+      shift 2
+      ;;
+    --learningdecay)
+      LEARNING_RATE_DECAY=$2
+      shift 2
+      ;;
+    *)
+      TOPOLOGY=$1
+      shift
+      DATASET_EVAL=$1
+      shift
+      DATASET_TRAIN=$@
+      shift $#
+      ;;
+  esac
+done
+if [ $# -gt 0 -o "x$MODEL" = "x" -o "x$TOPOLOGY" = "x" -o "x$DATASET_EVAL" = "x" -o "x$DATASET_TRAIN" = "x" ]
+then
+  usage
+  exit 1
+fi
+
+
+TMPMODEL=tmp-$(date +%Y%m%d%H%M%S)
+
+mkdir -p $TMPMODEL
+
+if [ -d "$MODEL" -a -f "$MODEL/checkpoint" ]
+then
+  echo "MODEL: importing from $MODEL to $TMPMODEL..."
+  CHECKPOINT=$(cat "$MODEL/checkpoint" | grep -E '^model_checkpoint_path' | grep -o -E '[^ ]+$' | grep -o -E '[^"]+')
+  if [ ! -f "$MODEL/$CHECKPOINT.meta" ]
+  then
+    echo "ERROR: model checkpoint not found ($CHECKPOINT)"
+    exit 3
+  fi
+  cp -p $MODEL/{checkpoint,graph.pbtxt,parameters.json,topology.yaml,$CHECKPOINT.meta,$CHECKPOINT.index,$CHECKPOINT.data*} $TMPMODEL/
+else
+  echo "MODEL: starting with empty model..."
+fi
+
+
+if [ $TENSORBOARD -eq 1 ]
+then
+  echo "TENSORBOARD: starting service..."
+  tensorboard --logdir $TMPMODEL > tensorboard.log 2>&1 &
+  TENSORBOARD_PID=$!
+fi
+
+
+LOG_FILE="$TMPMODEL/train-$(date +%Y%m%d%H%M%S).log"
+
+log_to_file() {
+  while IFS= read -r line
+  do
+    echo "$line" >> "$LOG_FILE"
+    echo "$line"
+  done
+}
+
+
+python3 src/run.py train \
+  --device $DEVICE \
+  --batch $BATCH_SIZE \
+  --steps $STEPS \
+  --epochs $EPOCHS \
+  $RAM \
+  $VERBOSE \
+  --initializer $INITIALIZER \
+  --regularizer $REGULARIZER \
+  --constraint $CONSTRAINT \
+  --activation $ACTIVATION \
+  --lrn $LRN_RADIUS \
+  $BATCHNORM \
+  --dropoutrate $DROPOUT_RATE \
+  --labelweight $LABEL_WEIGHT \
+  --loss $LOSS \
+  --optimizer $OPTIMIZER \
+  --learningrate $LEARNING_RATE \
+  --learningdecay $LEARNING_RATE_DECAY \
+  $TMPMODEL \
+  $TOPOLOGY \
+  $DATASET_EVAL \
+  $DATASET_TRAIN 2>&1 | log_to_file
+
+RETCODE=$?
+
+
+if [ -d "$TMPMODEL" ]
+then
+  if [ $RETCODE -eq 0 ]
+  then
+    echo "MODEL: saving result from $TMPMODEL to $MODEL..."
+    mkdir -p $MODEL
+    cp -R -p $TMPMODEL/* $MODEL
+  fi
+
+  [ $TENSORBOARD -eq 1 ] && sleep 15
+
+  echo "MODEL: cleanup $TMPMODEL..."
+  rm -rf $TMPMODEL
+fi
+
+
+if [ $TENSORBOARD -eq 1 ]
+then
+  echo "TENSORBOARD: stopping service..."
+  kill $TENSORBOARD_PID
+  sleep 5
+fi

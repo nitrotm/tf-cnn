@@ -1,0 +1,139 @@
+#!/bin/bash
+
+
+usage() {
+  echo "usage: task-bake [--always] [--config file] [--device DEV] [--batch N] [--compression FMT] name source [source ...]"
+  echo
+  echo "arguments:"
+  echo
+  echo "  name              : dataset name prefix"
+  echo "  source            : source images folder(s)"
+  echo
+  echo "bake options:"
+  echo
+  echo "  --always          : always generate dataset even if exists"
+  echo "  --config FILE     : read configuration parameters from file"
+  echo "  --device DEV      : tensorflow device"
+  echo "  --batch N         : bake batch size"
+  echo "  --compression FMT : tfr compression"
+}
+
+
+DATASET=
+SOURCES=
+
+ALWAYS=0
+DEVICE="/cpu:0"
+BATCH_SIZE=1
+
+BAKE_COMPRESSION=none
+BAKE_TEST_RATIO=0.2
+BAKE_EVAL_RATIO=0.1
+BAKE_SIZE=256
+BAKE_BLUR_RADIUS=0
+BAKE_BLUR_SCALE=1.0
+BAKE_CENTER_CROP=1.0
+BAKE_SCALES="1.0"
+BAKE_FLIPS="none"
+BAKE_ROTATIONS="0"
+BAKE_CROPS=1
+BAKE_BRIGHTNESS=0.0
+BAKE_CONTRAST=0.0
+BAKE_GAUSSIAN_NOISE=0.0
+BAKE_UNIFORM_NOISE=0.0
+
+while [ $# -ge 2 ]
+do
+  case "$1" in
+    --always)
+      ALWAYS=1
+      shift
+      ;;
+    --config)
+      source $2
+      shift 2
+      ;;
+    --device)
+      DEVICE=$2
+      shift 2
+      ;;
+    --batch)
+      BATCH_SIZE=$2
+      shift 2
+      ;;
+    --compression)
+      BAKE_COMPRESSION=$2
+      shift 2
+      ;;
+    *)
+      DATASET=$1
+      shift
+      SOURCES=$@
+      shift $#
+      ;;
+  esac
+done
+if [ $# -gt 0 -o "x$DATASET" = "x" -o "x$SOURCES" = "x" ]
+then
+  usage
+  exit 1
+fi
+
+
+DATASET_PREFIX="${DATASET}-${BAKE_SIZE}x${BAKE_SIZE}"
+
+if [ $ALWAYS -eq 0 -a -f "dataset/${DATASET_PREFIX}-train.tfr" -a -f "dataset/${DATASET_PREFIX}-eval.tfr" -a -f "dataset/${DATASET_PREFIX}-test.tfr" ]
+then
+  echo "DATASET: ${DATASET_PREFIX} already exists, skipping..."
+  exit 0
+fi
+
+
+mkdir -p bake
+
+LOG_FILE="bake/$DATASET-$(date +%Y%m%d%H%M%S).log"
+
+log_to_file() {
+  while IFS= read -r line
+  do
+    echo "$line" >> "$LOG_FILE"
+    echo "$line"
+  done
+}
+
+
+python3 src/run.py bake \
+  --device $DEVICE \
+  --batch $BATCH_SIZE \
+  --compression $BAKE_COMPRESSION \
+  --testratio $BAKE_TEST_RATIO \
+  --evalratio $BAKE_EVAL_RATIO \
+  --size $BAKE_SIZE \
+  --blur $BAKE_BLUR_RADIUS \
+  --blurscale $BAKE_BLUR_SCALE \
+  --centercrop $BAKE_CENTER_CROP \
+  --scales $BAKE_SCALES \
+  --flips $BAKE_FLIPS \
+  --rotations $BAKE_ROTATIONS \
+  --crops $BAKE_CROPS \
+  --brightness $BAKE_BRIGHTNESS \
+  --contrast $BAKE_CONTRAST \
+  --gnoise $BAKE_GAUSSIAN_NOISE \
+  --unoise $BAKE_UNIFORM_NOISE \
+  bake/${DATASET} \
+  $SOURCES 2>&1 | log_to_file
+
+RETCODE=$?
+
+
+if [ $RETCODE -eq 0 ]
+then
+  if [ -d dataset ]
+  then
+    echo "DATASET: saving data from bake/${DATASET}* to dataset/..."
+    mv bake/${DATASET}* dataset/
+  fi
+else
+  echo "DATASET: cleanup bake/${DATASET}*..."
+  rm -f bake/${DATASET}*
+fi

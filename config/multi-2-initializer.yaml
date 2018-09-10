@@ -1,0 +1,42 @@
+name: initializers
+global:
+  batch_size: 50
+  steps: 25
+  epochs: 25
+  seed: 75437
+  topology: topologies/unet3c.yaml
+  optimizer: nadam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  loss: jaccard
+  activation: lrelu
+  local_response_normalization: 0
+  batch_normalization: true
+  dropout_rate: 0.5
+  initializer: he_normal
+  regularizer: none
+  constraint: none
+  label_weighting: 0.0
+dataset:
+  train: dataset/medium-256x256-train.tfr
+  eval: dataset/medium-256x256-eval.tfr
+  test: dataset/medium-256x256-test.tfr
+models:
+  glorot_normal:
+    initializer: glorot_normal
+  glorot_uniform:
+    initializer: glorot_uniform
+  he_normal:
+    initializer: he_normal
+  he_uniform:
+    initializer: he_uniform
+  lecun_uniform:
+    initializer: lecun_uniform
+  lecun_normal:
+    initializer: lecun_normal
+  random_normal:
+    initializer: random_normal
+  random_uniform:
+    initializer: random_uniform
+  truncated_normal:
+    initializer: truncated_normal

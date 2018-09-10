@@ -1,0 +1,129 @@
+#!/bin/bash
+
+
+usage() {
+  echo "usage: task-eval [--device DEV] [--batch N] [--steps N] [--verbose] [--checkpoint id] modeldir source [source ...]"
+  echo
+  echo "arguments:"
+  echo
+  echo "  modeldir          : model storage directory"
+  echo "  source            : evaluation dataset(s)"
+  echo
+  echo "prediction options:"
+  echo
+  echo "  --device DEV      : tensorflow device"
+  echo "  --batch N         : evaluation batch size"
+  echo "  --steps N         : evaluation steps per epoch"
+  echo "  --verbose         : output detailed summaries"
+  echo "  --checkpoint ID   : use specific checkpoint"
+}
+
+
+MODEL=
+TMPMODEL=tmp-$(date +%Y%m%d%H%M%S)
+SOURCES=
+
+if [ -f "/proc/driver/nvidia/version" ]
+then
+  DEVICE="/gpu:0"
+else
+  DEVICE="/cpu:0"
+fi
+BATCH_SIZE=1
+STEPS=-1
+VERBOSE=
+
+CHECKPOINT=
+
+while [ $# -ge 2 ]
+do
+  case "$1" in
+    --device)
+      DEVICE=$2
+      shift 2
+      ;;
+    --batch)
+      BATCH_SIZE=$2
+      shift 2
+      ;;
+    --steps)
+      STEPS=$2
+      shift 2
+      ;;
+    --verbose)
+      VERBOSE=$1
+      shift
+      ;;
+    --checkpoint)
+      CHECKPOINT=$2
+      shift 2
+      ;;
+    *)
+      MODEL=$1
+      shift
+      SOURCES=$@
+      shift $#
+      ;;
+  esac
+done
+if [ $# -gt 0 -o "x$MODEL" = "x" -o "x$SOURCES" = "x" ]
+then
+  usage
+  exit 1
+fi
+if [ ! -f "$MODEL/checkpoint" ]
+then
+  echo "ERROR: no model checkpoint available"
+  exit 2
+fi
+if [ "x$CHECKPOINT" = "x" ]
+then
+  CHECKPOINT=$(cat "$MODEL/checkpoint" | grep -E '^model_checkpoint_path' | grep -o -E '[^ ]+$' | grep -o -E '[^"]+')
+fi
+if [ ! -f "$MODEL/$CHECKPOINT.meta" ]
+then
+  echo "ERROR: model checkpoint not found ($CHECKPOINT)"
+  exit 3
+fi
+
+
+echo "MODEL: importing checkpoint $CHECKPOINT from $MODEL to $TMPMODEL..."
+mkdir -p $TMPMODEL
+cp -p $MODEL/{graph.pbtxt,parameters.json,topology.yaml,$CHECKPOINT.meta,$CHECKPOINT.index,$CHECKPOINT.data*} $TMPMODEL/
+echo "model_checkpoint_path: \"$CHECKPOINT\"" > $TMPMODEL/checkpoint
+
+
+LOG_FILE="$TMPMODEL/eval-$(date +%Y%m%d%H%M%S).log"
+
+log_to_file() {
+  while IFS= read -r line
+  do
+    echo "$line" >> "$LOG_FILE"
+    echo "$line"
+  done
+}
+
+
+python3 src/run.py eval \
+  --device $DEVICE \
+  --batch $BATCH_SIZE \
+  --steps $STEPS \
+  $VERBOSE \
+  $TMPMODEL \
+  $SOURCES 2>&1 | log_to_file
+
+RETCODE=$?
+
+
+if [ -d "$TMPMODEL" ]
+then
+  if [ $RETCODE -eq 0 ]
+  then
+    echo "MODEL: saving logs from $TMPMODEL to $MODEL..."
+    mkdir -p $MODEL
+    cp "$LOG_FILE" $MODEL/$(basename $LOG_FILE)
+  fi
+
+  echo "MODEL: cleanup $TMPMODEL..."
+  rm -rf $TMPMODEL
+fi

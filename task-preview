@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+if [ $# -lt 1 ]
+then
+  echo "usage: task-preview source [source ...]"
+  exit 1
+fi
+
+
+python3 src/run.py preview $@

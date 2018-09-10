@@ -1,0 +1,140 @@
+#!/bin/bash
+
+
+python3 src/run.py importmve \
+  spot60:../../work/20180514-124607 \
+  spot61:../../work/20180515-195555 \
+  spot62:../../work/20180516-143208 \
+  dataset/images/1_mve
+
+
+rm -rf dataset/bake/tealeaves
+
+python3 src/run.py merge2d \
+  dataset/images/1_mve \
+  dataset/images/2_extras \
+  dataset/bake/tealeaves
+
+python3 src/run.py cleanmask \
+  --open 5 \
+  --close 5 \
+  --minarea 100 \
+  --expand 2 \
+  dataset/bake/tealeaves
+
+python3 src/run.py genweight \
+  --expand 10 \
+  --ratio 0.006 \
+  dataset/bake/tealeaves
+
+./task-bake --config config/bake256-small.config  --batch 10 small   dataset/bake/tealeaves/
+./task-bake --config config/bake256-medium.config --batch 5  medium  dataset/bake/tealeaves/
+
+./task-tfrdist dataset/small-256x256-*.tfr
+./task-tfrdist dataset/medium-256x256-*.tfr
+
+
+rm -rf dataset/bake/tealeaves20p
+
+python3 src/run.py merge2d \
+  dataset/images/1_mve \
+  dataset/images/2_extras \
+  dataset/bake/tealeaves20p
+
+python3 src/run.py cleanmask \
+  --open 5 \
+  --close 5 \
+  --minarea 100 \
+  --expand 2 \
+  dataset/bake/tealeaves20p
+
+python3 src/run.py genweight \
+  --expand 20 \
+  --ratio 0.003 \
+  --border 20:1.1 \
+  dataset/bake/tealeaves20p
+
+./task-bake --config config/bake256-small.config  --batch 10 small20p   dataset/bake/tealeaves20p/
+./task-bake --config config/bake256-medium.config --batch 5  medium20p  dataset/bake/tealeaves20p/
+
+./task-tfrdist dataset/small20p-256x256-*.tfr
+./task-tfrdist dataset/medium20p-256x256-*.tfr
+
+
+rm -rf dataset/bake/tealeaves20n
+
+python3 src/run.py merge2d \
+  dataset/images/1_mve \
+  dataset/images/2_extras \
+  dataset/bake/tealeaves20n
+
+python3 src/run.py cleanmask \
+  --open 5 \
+  --close 5 \
+  --minarea 100 \
+  --expand 2 \
+  dataset/bake/tealeaves20n
+
+python3 src/run.py genweight \
+  --expand 10 \
+  --ratio 0.0075 \
+  --border 20:0.8 \
+  dataset/bake/tealeaves20n
+
+./task-bake --config config/bake256-small.config  --batch 10 small20n   dataset/bake/tealeaves20n/
+./task-bake --config config/bake256-medium.config --batch 5  medium20n  dataset/bake/tealeaves20n/
+
+./task-tfrdist dataset/small20n-256x256-*.tfr
+./task-tfrdist dataset/medium20n-256x256-*.tfr
+
+
+
+python src/run.py importflower ../notebooks/flowers dataset/images/4_flowers/
+
+
+rm -rf dataset/bake/flower5n
+
+python3 src/run.py merge2d \
+  dataset/images/4_flowers \
+  dataset/bake/flower5n
+
+python3 src/run.py cleanmask \
+  --open 2 \
+  --close 2 \
+  --minarea 100 \
+  --expand 2 \
+  dataset/bake/flower5n
+
+python3 src/run.py genweight \
+  --expand 2 \
+  --ratio 2.0 \
+  --border 5:1.2 \
+  dataset/bake/flower5n
+
+./task-bake --config config/bake256-flower.config --batch 10 flower5n dataset/bake/flower5n
+
+./task-tfrdist dataset/flower5n-256x256-*.tfr
+
+
+rm -rf dataset/bake/buds5n
+
+python3 src/run.py merge2d \
+  dataset/images/3_buds \
+  dataset/bake/buds5n
+
+python3 src/run.py cleanmask \
+  --open 3 \
+  --close 3 \
+  --minarea 50 \
+  --expand 2 \
+  dataset/bake/buds5n
+
+python3 src/run.py genweight \
+  --expand 5 \
+  --ratio 0.003 \
+  --border 10:0.8 \
+  dataset/bake/buds5n
+
+./task-bake --config config/bake256-medium.config --batch 10 buds5n dataset/bake/buds5n/
+
+./task-tfrdist dataset/buds5n-256x256-*.tfr

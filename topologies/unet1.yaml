@@ -1,0 +1,56 @@
+# square image size
+input_size: 256
+
+# rgb image input
+input_channels: 3
+
+# input layer name
+input: x
+
+# output layer name
+output: up1b
+
+# layer definitions
+layers:
+  # 256x256x3 -> 128x128x4
+  down1_2:
+    input: x
+    type: conv2d
+    lrn_radius: 2
+    params:
+      filters: 4
+      kernel_size: 7
+      strides: 2
+      padding: same
+
+  # 128x128x4 -> 128x128x12
+  down1b:
+    inputs: [down1_2]
+    type: conv2d
+    params:
+      filters: 12
+      kernel_size: 1
+      strides: 1
+      padding: same
+
+
+  # 128x128x12 -> 256x256x3
+  up1_2:
+    input: down1b
+    type: conv2d_transpose
+    lrn_radius: 2
+    params:
+      filters: 3
+      kernel_size: 7
+      strides: 2
+      padding: same
+
+  # 256x256x(3+3) -> 256x256x6
+  up1b:
+    inputs: [up1_2, x]
+    type: conv2d
+    params:
+      filters: 6
+      kernel_size: 1
+      strides: 1
+      padding: same

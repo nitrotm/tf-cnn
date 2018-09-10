@@ -1,0 +1,59 @@
+#########################
+# General configuration
+#########################
+
+# tensorflow device
+#DEVICE=/cpu:0
+
+# pipeline batch size
+#BATCH_SIZE=1
+
+
+#########################
+# Baking configuration
+#########################
+
+# output compression (none, zlib, gzip)
+#BAKE_COMPRESSION=none
+
+# test set ratio (of total instances)
+#BAKE_TEST_RATIO=0.2
+
+# eval set ratio (of remaining instances)
+#BAKE_EVAL_RATIO=0.1
+
+# image size
+#BAKE_SIZE=256
+
+# mask/weight blur radius
+#BAKE_BLUR_RADIUS=0
+
+# mask/weight blur down-scaling
+#BAKE_BLUR_SCALE=1.0
+
+# center crop ratio
+#BAKE_CENTER_CROP=1.0
+
+# image scales
+#BAKE_SCALES="1.0"
+
+# image flips
+#BAKE_FLIPS="none"
+
+# image rotations
+#BAKE_ROTATIONS="0"
+
+# number of image crops/variations
+#BAKE_CROPS=1
+
+# random brightness factor
+#BAKE_BRIGHTNESS=0.0
+
+# random contrast factor
+#BAKE_CONTRAST=0.0
+
+# gaussian noise stddev
+#BAKE_GAUSSIAN_NOISE=0.0
+
+# uniform noise magnitude
+#BAKE_UNIFORM_NOISE=0.0

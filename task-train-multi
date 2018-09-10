@@ -1,0 +1,98 @@
+#!/bin/bash
+
+
+usage() {
+  echo "usage: task-train-multi [options] multi.yaml modeldir"
+  echo
+  echo "arguments:"
+  echo
+  echo "  multi.yaml     : multiple models configuration"
+  echo "  modeldir       : model storage directory prefix"
+  echo
+  echo "general options:"
+  echo
+  echo "  --tensorboard  : launch tensorboard while training"
+  echo "  --always       : always run training even if model exists"
+  echo "  --fresh        : always start from empty model"
+  echo
+  echo "training options:"
+  echo
+  echo "  --device DEV   : tensorflow device"
+  echo "  --ram          : load dataset in ram"
+  echo "  --verbose      : output detailed summaries"
+}
+
+
+CONFIGURATION=
+MODEL=
+
+TENSORBOARD=
+ALWAYS=
+FRESH=
+
+if [ -f "/proc/driver/nvidia/version" ]
+then
+  DEVICE="/gpu:0"
+else
+  DEVICE="/cpu:0"
+fi
+RAM=
+VERBOSE=
+
+while [ $# -ge 1 ]
+do
+  case "$1" in
+    --tensorboard)
+      TENSORBOARD=$1
+      shift
+      ;;
+    --always)
+      ALWAYS=$1
+      shift
+      ;;
+    --fresh)
+      FRESH=$1
+      shift
+      ;;
+    --device)
+      DEVICE=$2
+      shift 2
+      ;;
+    --ram)
+      RAM=$1
+      shift
+      ;;
+    --verbose)
+      VERBOSE=$1
+      shift
+      ;;
+    *)
+      CONFIGURATION=$1
+      shift
+      if [ $# -ge 1 ]
+      then
+        MODEL=$1
+        shift
+      else
+        usage
+        exit 1
+      fi
+      ;;
+  esac
+done
+if [ $# -gt 0 -o "x$CONFIGURATION" = "x" -o ! -f "$CONFIGURATION" -o "x$MODEL" = "x" ]
+then
+  usage
+  exit 1
+fi
+
+
+python3 src/run.py trainmulti \
+  $TENSORBOARD \
+  $ALWAYS \
+  $FRESH \
+  --device $DEVICE \
+  $RAM \
+  $VERBOSE \
+  $CONFIGURATION \
+  $MODEL

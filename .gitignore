@@ -1,0 +1,9 @@
+__pycache__
+
+tensorboard.log
+
+bake/
+dataset/
+models/
+lib/
+tmp-*/

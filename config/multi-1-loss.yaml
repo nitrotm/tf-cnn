@@ -1,0 +1,42 @@
+name: losses
+global:
+  batch_size: 50
+  steps: 25
+  epochs: 25
+  seed: 75437
+  topology: topologies/unet3c.yaml
+  optimizer: nadam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  loss: jaccard
+  activation: lrelu
+  local_response_normalization: 0
+  batch_normalization: true
+  dropout_rate: 0.5
+  initializer: he_normal
+  regularizer: none
+  constraint: none
+  label_weighting: 0.0
+dataset:
+  train: dataset/medium-256x256-train.tfr
+  eval: dataset/medium-256x256-eval.tfr
+  test: dataset/medium-256x256-test.tfr
+models:
+  abs:
+    loss: abs
+  hinge:
+    loss: hinge
+  huber:
+    loss: huber:1.0
+  jaccard:
+    loss: jaccard
+  log:
+    loss: log
+  mse:
+    loss: mse
+  sigmoid:
+    loss: sigmoid
+  softmax:
+    loss: softmax
+  sparsesoftmax:
+    loss: sparsesoftmax

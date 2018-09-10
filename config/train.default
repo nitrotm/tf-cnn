@@ -1,0 +1,57 @@
+#########################
+# General configuration
+#########################
+
+# tensorflow device
+#DEVICE=/cpu:0
+
+# pipeline batch size
+#BATCH_SIZE=1
+
+# maximum training/eval steps (-1=all)
+#STEPS=-1
+
+# number of training/prediction epochs
+#EPOCHS=1
+
+
+#########################
+# Model configuration
+#########################
+
+# kernel initializer function:
+# none, uniform:MIN:MAX, glorot_uniform, he_uniform, lecun_uniform, normal:MEAN:STDDEV, truncated_normal:MEAN:STDDEV, glorot_normal, he_normal, lecun_normal
+#INITIALIZER=none
+
+# kernel regularizer function:
+# none, l1:COEF, l2:COEF, l1_l2:COEF1:COEF2
+#REGULARIZER=none
+
+# kernel constraint function
+# none, nonneg, unit, max:MAX, minmax:MIN:MAX
+#CONSTRAINT=none
+
+# activation function:
+# sigmoid, tanh, relu, relu6, crelu, lrelu, elu, selu, softmax, softplus, softsign
+#ACTIVATION=sigmoid
+
+# dropout rate
+#DROPOUT_RATE=0.0
+
+# extra label weight
+#LABEL_WEIGHT=0.0
+
+# loss function
+# abs, huber:DELTA, mse, log, hinge, sigmoid, softmax, jaccard
+#LOSS=absdiff
+
+# optimizer
+# gd, momentum:MOMENTUM, nesterov:MOMENTUM, rmsprop:DECAY:MOMENTUM, adam:BETA1:BETA2, nadam:BETA1:BETA2
+#OPTIMIZER=gd
+
+# initial learning rate
+#LEARNING_RATE=0.001
+
+# learning rate decay
+# none, poly:STEPS:ENDRATE:POWER, idt:STEPS:RATE, exp:STEPS:RATE, cos:STEPS:ALPHA, lincos:STEPS:NUMPERIODS:ALPHA:BETA, noisylincos:STEPS:VAR:VARDECAY:NUMPERIODS:ALPHA:BETA
+#LEARNING_RATE_DECAY=none

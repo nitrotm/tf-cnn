@@ -1,0 +1,36 @@
+name: buds
+global:
+  batch_size: 10
+  steps: 25
+  epochs: 5
+  seed: 75437
+  topology: topologies/unet3c.yaml
+  optimizer: nadam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  loss: jaccard
+  activation: lrelu
+  local_response_normalization: 0
+  batch_normalization: true
+  dropout_rate: 0.5
+  initializer: he_uniform
+  regularizer: none
+  constraint: none
+  label_weighting: 0.0
+dataset:
+  train: dataset/buds5n-256x256-train.tfr
+  eval: dataset/buds5n-256x256-eval.tfr
+  test: dataset/buds5n-256x256-test.tfr
+models:
+  unet1:
+    topology: topologies/unet1.yaml
+  unet1b:
+    topology: topologies/unet1b.yaml
+  unet2:
+    topology: topologies/unet2.yaml
+  unet2b:
+    topology: topologies/unet2b.yaml
+  unet3:
+    topology: topologies/unet3.yaml
+  unet3b:
+    topology: topologies/unet3b.yaml

@@ -1,0 +1,36 @@
+name: optimizers
+global:
+  batch_size: 50
+  steps: 25
+  epochs: 25
+  seed: 75437
+  topology: topologies/unet3c.yaml
+  optimizer: nadam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  loss: jaccard
+  activation: lrelu
+  local_response_normalization: 0
+  batch_normalization: true
+  dropout_rate: 0.5
+  initializer: he_normal
+  regularizer: none
+  constraint: none
+  label_weighting: 0.0
+dataset:
+  train: dataset/medium-256x256-train.tfr
+  eval: dataset/medium-256x256-eval.tfr
+  test: dataset/medium-256x256-test.tfr
+models:
+  gd:
+    optimizer: gd
+  momentum:
+    optimizer: momentum:0.5
+  nesterov:
+    optimizer: nesterov:0.5
+  rmsprop:
+    optimizer: rmsprop:0.9:0.5
+  adam:
+    optimizer: adam:0.9:0.999
+  nadam:
+    optimizer: nadam:0.9:0.999

@@ -1,0 +1,164 @@
+# name of configuration set
+name: example
+
+
+
+#########################
+# Global defaults       #
+#########################
+
+global:
+  # batch size
+  batch_size: 10
+
+  # training steps per epoch
+  steps: 100
+
+  # training epochs
+  epochs: 1
+
+  # random generator seed
+  seed: 75437
+
+  # global model topology
+  topology: topologies/test.yaml
+
+  # global topology version
+  topology_version: 2
+
+  # optimizer
+  # * gd
+  #   momentum:MOMENTUM
+  #   nesterov:MOMENTUM
+  #   rmsprop:DECAY:MOMENTUM
+  #   adam:BETA1:BETA2
+  #   nadam:BETA1:BETA2
+  optimizer: gd
+
+  # initial learning rate
+  learning_rate: 0.001
+
+  # learning rate decay
+  # * none
+  #   poly:STEPS:ENDRATE:POWER
+  #   idt:STEPS:RATE
+  #   exp:STEPS:RATE
+  #   cos:STEPS:ALPHA
+  #   lincos:STEPS:NUMPERIODS:ALPHA:BETA
+  #   noisylincos:STEPS:VAR:VARDECAY:NUMPERIODS:ALPHA:BETA
+  learning_rate_decay: none
+
+  # loss function
+  # * abs
+  #   huber:DELTA
+  #   mse
+  #   log
+  #   hinge
+  #   sigmoid
+  #   softmax
+  #   jaccard
+  loss: abs
+
+  # global activation function:
+  # * none
+  #   sigmoid
+  #   tanh
+  #   relu
+  #   relu6
+  #   crelu
+  #   lrelu
+  #   elu
+  #   selu
+  #   softmax
+  #   softplus
+  #   softsign
+  activation: none
+
+  # global local response normalization (radius)
+  # can be negative to disable all lrn
+  local_response_normalization: 0
+
+  # global batch normalization enable
+  # can be negative to disable all bn
+  batch_normalization: false
+
+  # global dropout rate
+  # can be negative to disable all dropout
+  dropout_rate: 0.0
+
+  # global kernel initializer function:
+  # * none
+  #   uniform:MIN:MAX
+  #   glorot_uniform
+  #   he_uniform
+  #   lecun_uniform
+  #   normal:MEAN:STDDEV
+  #   truncated_normal:MEAN:STDDEV
+  #   glorot_normal
+  #   he_normal
+  #   lecun_normal
+  initializer: none
+
+  # global kernel regularizer function:
+  # * none
+  #   l1:COEF
+  #   l2:COEF
+  #   l1_l2:COEF1:COEF2
+  regularizer: none
+
+  # global kernel constraint function
+  # * none
+  #   nonneg
+  #   unit
+  #   max:MAX
+  #   minmax:MIN:MAX
+  constraint: none
+
+  # extra label weight
+  label_weighting: 0.0
+
+
+
+#########################
+# Dataset               #
+#########################
+
+dataset:
+  # training dataset
+  train: dataset/example-train.tfr
+
+  # evaluation dataset
+  eval: dataset/example-eval.tfr
+
+  # test dataset
+  test: dataset/example-test.tfr
+
+
+
+#########################
+# Model configurations  #
+#########################
+
+models:
+  config1:
+    # override any of global configuration:
+    # batch_size: 10
+    # steps: 100
+    # epochs: 1
+    # seed: 75437
+    # topology: topologies/test.yaml
+    # topology_version: 2
+    # optimizer: gd
+    # learning_rate: 0.001
+    # learning_rate_decay: 0.0
+    # loss: abs
+    # activation: none
+    # local_response_normalization: 0
+    # batch_normalization: false
+    # dropout_rate: 0.0
+    # initializer: none
+    # regularizer: none
+    # constraint: none
+    # label_weight: 0.0
+  config2: {}
+  # ...

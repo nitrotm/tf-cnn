@@ -1,0 +1,312 @@
+# square image size
+input_size: 256
+
+# rgb image input
+input_channels: 3
+
+# input layer name
+input: x
+
+# output layer name
+output: up1b
+
+# layer definitions
+layers:
+  # 256x256x3 -> 128x128x4
+  down1_0:
+    input: x
+    type: conv2d
+    activation: none
+    lrn_radius: 2
+    batch_normalization: false
+    params:
+      filters: 4
+      kernel_size: 3
+      strides: 2
+      padding: same
+
+  # 256x256x3 -> 128x128x4
+  down1_1:
+    input: x
+    type: conv2d
+    activation: none
+    lrn_radius: 2
+    batch_normalization: false
+    params:
+      filters: 4
+      kernel_size: 5
+      strides: 2
+      padding: same
+
+  # 256x256x3 -> 128x128x4
+  down1_2:
+    input: x
+    type: conv2d
+    activation: none
+    lrn_radius: 2
+    batch_normalization: false
+    params:
+      filters: 4
+      kernel_size: 7
+      strides: 2
+      padding: same
+
+  # 128x128x(4+4+4) -> 128x128x12
+  down1b:
+    inputs: [down1_0, down1_1, down1_2]
+    type: conv2d
+    params:
+      filters: 12
+      kernel_size: 1
+      strides: 1
+      padding: same
+
+
+  # 128x128x12 -> 64x64x12
+  down2_0:
+    input: down1b
+    type: conv2d
+    activation: none
+    lrn_radius: 3
+    batch_normalization: false
+    params:
+      filters: 12
+      kernel_size: 3
+      strides: 2
+      padding: same
+
+  # 128x128x12 -> 64x64x12
+  down2_1:
+    input: down1b
+    type: conv2d
+    activation: none
+    lrn_radius: 3
+    batch_normalization: false
+    params:
+      filters: 12
+      kernel_size: 5
+      strides: 2
+      padding: same
+
+  # 128x128x12 -> 64x64x12
+  down2_2:
+    input: down1b
+    type: conv2d
+    activation: none
+    lrn_radius: 3
+    batch_normalization: false
+    params:
+      filters: 12
+      kernel_size: 7
+      strides: 2
+      padding: same
+
+  # 64x64x(12+12+12) -> 64x64x36
+  down2b:
+    inputs: [down2_0, down2_1, down2_2]
+    type: conv2d
+    params:
+      filters: 36
+      kernel_size: 1
+      strides: 1
+      padding: same
+
+
+  # 64x64x36 -> 32x32x36
+  down3_0:
+    input: down2b
+    type: conv2d
+    activation: none
+    lrn_radius: 4
+    batch_normalization: false
+    params:
+      filters: 36
+      kernel_size: 3
+      strides: 2
+      padding: same
+
+  # 64x64x36 -> 32x32x36
+  down3_1:
+    input: down2b
+    type: conv2d
+    activation: none
+    lrn_radius: 4
+    batch_normalization: false
+    params:
+      filters: 36
+      kernel_size: 5
+      strides: 2
+      padding: same
+
+  # 64x64x36 -> 32x32x36
+  down3_2:
+    input: down2b
+    type: conv2d
+    activation: none
+    lrn_radius: 4
+    batch_normalization: false
+    params:
+      filters: 36
+      kernel_size: 7
+      strides: 2
+      padding: same
+
+  # 32x32x(36+36+36) -> 32x32x108
+  down3b:
+    inputs: [down3_0, down3_1, down3_2]
+    type: conv2d
+    params:
+      filters: 108
+      kernel_size: 1
+      strides: 1
+      padding: same
+
+
+  # 32x32x108 -> 64x64x36
+  up3_0:
+    input: down3b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 4
+    batch_normalization: false
+    params:
+      filters: 108
+      kernel_size: 3
+      strides: 2
+      padding: same
+
+  # 32x32x108 -> 64x64x36
+  up3_1:
+    input: down3b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 4
+    batch_normalization: false
+    params:
+      filters: 108
+      kernel_size: 5
+      strides: 2
+      padding: same
+
+  # 32x32x108 -> 64x64x36
+  up3_2:
+    input: down3b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 4
+    batch_normalization: false
+    params:
+      filters: 108
+      kernel_size: 7
+      strides: 2
+      padding: same
+
+  # 64x64x(36+36+36+36) -> 64x64x36
+  up3b:
+    inputs: [up3_0, up3_1, up3_2, down2b]
+    type: conv2d
+    params:
+      filters: 36
+      kernel_size: 1
+      strides: 1
+      padding: same
+
+
+  # 64x64x36 -> 128x128x12
+  up2_0:
+    input: up3b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 3
+    batch_normalization: false
+    params:
+      filters: 12
+      kernel_size: 3
+      strides: 2
+      padding: same
+
+  # 64x64x36 -> 128x128x12
+  up2_1:
+    input: up3b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 3
+    batch_normalization: false
+    params:
+      filters: 12
+      kernel_size: 5
+      strides: 2
+      padding: same
+
+  # 64x64x36 -> 128x128x12
+  up2_2:
+    input: up3b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 3
+    batch_normalization: false
+    params:
+      filters: 12
+      kernel_size: 7
+      strides: 2
+      padding: same
+
+  # 128x128x(12+12+12+12) -> 128x128x12
+  up2b:
+    inputs: [up2_0, up2_1, up2_2, down1b]
+    type: conv2d
+    params:
+      filters: 12
+      kernel_size: 1
+      strides: 1
+      padding: same
+
+
+  # 128x128x12 -> 256x256x3
+  up1_0:
+    input: up2b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 2
+    batch_normalization: false
+    params:
+      filters: 3
+      kernel_size: 3
+      strides: 2
+      padding: same
+
+  # 128x128x12 -> 256x256x3
+  up1_1:
+    input: up2b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 2
+    batch_normalization: false
+    params:
+      filters: 3
+      kernel_size: 5
+      strides: 2
+      padding: same
+
+  # 128x128x12 -> 256x256x3
+  up1_2:
+    input: up2b
+    type: conv2d_transpose
+    activation: none
+    lrn_radius: 2
+    batch_normalization: false
+    params:
+      filters: 3
+      kernel_size: 7
+      strides: 2
+      padding: same
+
+  # 256x256x(3+3+3+3) -> 256x256x12
+  up1b:
+    inputs: [up1_0, up1_1, up1_2, x]
+    type: conv2d
+    params:
+      filters: 12
+      kernel_size: 1
+      strides: 1
+      padding: same

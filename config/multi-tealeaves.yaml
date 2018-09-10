@@ -1,0 +1,57 @@
+name: topologies
+global:
+  batch_size: 50
+  steps: 100
+  epochs: 100
+  seed: 75437
+  topology: topologies/unet3c.yaml
+  optimizer: adam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  loss: jaccard
+  activation: lrelu
+  local_response_normalization: 0
+  batch_normalization: false
+  dropout_rate: 0.0
+  initializer: glorot_normal
+  regularizer: none
+  constraint: none
+  label_weighting: 0.0
+dataset:
+  train: dataset/large-256x256-train.tfr
+  eval: dataset/large-256x256-eval.tfr
+  test: dataset/large-256x256-test.tfr
+models:
+  default: {}
+  dropout0_5:
+    batch_normalization: true
+    dropout_rate: 0.5
+  dropout0_1:
+    batch_normalization: true
+    dropout_rate: 0.1
+  nadam:
+    optimizer: nadam
+  noweights:
+    label_weighting: -1
+  seed1:
+    seed: 48729
+  seed2:
+    seed: 71712
+  seed3:
+    seed: 4289275
+  seed4:
+    seed: 29798290
+  slower:
+    learning_rate: 0.0005
+  unet3d:
+    topology: topologies/unet3d.yaml
+  large20n:
+    dataset:
+      train: dataset/large20n-256x256-train.tfr
+      eval: dataset/large20n-256x256-eval.tfr
+      test: dataset/large20n-256x256-test.tfr
+  large20p:
+    dataset:
+      train: dataset/large20p-256x256-train.tfr
+      eval: dataset/large20p-256x256-eval.tfr
+      test: dataset/large20p-256x256-test.tfr

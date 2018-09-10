@@ -1,0 +1,52 @@
+name: norms
+global:
+  batch_size: 50
+  steps: 25
+  epochs: 25
+  seed: 75437
+  topology: topologies/unet3c.yaml
+  optimizer: nadam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  loss: jaccard
+  activation: lrelu
+  local_response_normalization: 0
+  batch_normalization: true
+  dropout_rate: 0.5
+  initializer: he_normal
+  regularizer: none
+  constraint: none
+  label_weighting: 0.0
+dataset:
+  train: dataset/medium-256x256-train.tfr
+  eval: dataset/medium-256x256-eval.tfr
+  test: dataset/medium-256x256-test.tfr
+models:
+  bn:
+    local_response_normalization: -1
+    batch_normalization: true
+    dropout_rate: -1
+  bndropout:
+    local_response_normalization: -1
+    batch_normalization: true
+    dropout_rate: 0.5
+  dropout:
+    local_response_normalization: -1
+    batch_normalization: -1
+    dropout_rate: 0.5
+  lrn:
+    local_response_normalization: 0
+    batch_normalization: -1
+    dropout_rate: -1
+  lrnbndropout:
+    local_response_normalization: 0
+    batch_normalization: true
+    dropout_rate: 0.5
+  lrndropout:
+    local_response_normalization: 0
+    batch_normalization: -1
+    dropout_rate: 0.5
+  nonorm:
+    local_response_normalization: -1
+    batch_normalization: -1
+    dropout_rate: -1

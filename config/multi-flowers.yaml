@@ -1,0 +1,54 @@
+name: flowers
+global:
+  batch_size: 50
+  steps: 25
+  epochs: 50
+  seed: 75437
+  topology: topologies/unet3c.yaml
+  optimizer: nadam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  loss: jaccard
+  activation: lrelu
+  local_response_normalization: 0
+  batch_normalization: true
+  dropout_rate: 0.5
+  initializer: glorot_normal
+  regularizer: none
+  constraint: none
+  label_weighting: 0.0
+dataset:
+  train: dataset/flower5n-256x256-train.tfr
+  eval: dataset/flower5n-256x256-eval.tfr
+  test: dataset/flower5n-256x256-test.tfr
+models:
+  unet1:
+    topology: topologies/unet1.yaml
+  unet1b:
+    topology: topologies/unet1b.yaml
+  unet1c:
+    topology: topologies/unet1c.yaml
+  unet2:
+    topology: topologies/unet2.yaml
+  unet2b:
+    topology: topologies/unet2b.yaml
+  unet2c:
+    topology: topologies/unet2c.yaml
+  unet3:
+    topology: topologies/unet3.yaml
+  unet3b:
+    topology: topologies/unet3b.yaml
+  unet3c:
+    topology: topologies/unet3c.yaml
+  unet3c-lrnonly:
+    topology: topologies/unet3c.yaml
+    batch_normalization: false
+    dropout_rate: 0.0
+  unet4:
+    topology: topologies/unet4.yaml
+  unet4c:
+    topology: topologies/unet4c.yaml
+  unet5:
+    topology: topologies/unet5.yaml
+  unet5c:
+    topology: topologies/unet5c.yaml

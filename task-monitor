@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+if [ $# -lt 1 ]
+then
+  echo "usage: task-monitor modeldir [args...]"
+  exit 1
+fi
+
+MODEL=$1
+shift
+
+
+tensorboard --logdir $MODEL $@

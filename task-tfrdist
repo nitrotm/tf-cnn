@@ -1,0 +1,26 @@
+#!/bin/bash
+
+
+usage() {
+  echo "usage: task-tfrdist source [source ...]"
+}
+
+SOURCES=
+
+while [ $# -ge 1 ]
+do
+  case "$1" in
+    *)
+      SOURCES=$@
+      shift $#
+      ;;
+  esac
+done
+if [ $# -gt 0 -o "x$SOURCES" = "x" ]
+then
+  usage
+  exit 1
+fi
+
+
+python3 src/run.py tfrdist $SOURCES

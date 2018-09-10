@@ -1,0 +1,57 @@
+name: rates
+global:
+  batch_size: 50
+  steps: 25
+  epochs: 25
+  seed: 75437
+  topology: topologies/unet3c.yaml
+  optimizer: nadam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  loss: jaccard
+  activation: lrelu
+  local_response_normalization: 0
+  batch_normalization: true
+  dropout_rate: 0.5
+  initializer: he_normal
+  regularizer: none
+  constraint: none
+  label_weighting: 0.0
+dataset:
+  train: dataset/medium-256x256-train.tfr
+  eval: dataset/medium-256x256-eval.tfr
+  test: dataset/medium-256x256-test.tfr
+models:
+  e_1:
+    learning_rate: 0.1
+    learning_rate_decay: none
+  e_2:
+    learning_rate: 0.01
+    learning_rate_decay: none
+  e_3:
+    learning_rate: 0.001
+    learning_rate_decay: none
+  e_4:
+    learning_rate: 0.0001
+    learning_rate_decay: none
+  poly_decay:
+    learning_rate: 0.001
+    learning_rate_decay: poly:1000:0.0001:2
+  idt_decay:
+    learning_rate: 0.001
+    learning_rate_decay: itd:1000:0.01
+  exp_decay:
+    learning_rate: 0.001
+    learning_rate_decay: exp:1:0.9977
+  natexp_decay:
+    learning_rate: 0.001
+    learning_rate_decay: natexp:1:0.0023
+  cos_decay:
+    learning_rate: 0.001
+    learning_rate_decay: cos:100:0.0001
+  lincos_decay:
+    learning_rate: 0.001
+    learning_rate_decay: lincos:1000:5:0.0:0.0001
+  noisylincos_decay:
+    learning_rate: 0.001
+    learning_rate_decay: noisylincos:1000:1.0:0.55:5:0.0:0.0001

@@ -1,0 +1,46 @@
+#!/bin/bash
+
+
+usage() {
+  echo "usage: task-tfrlist [--batch N] [--step N] [--epochs N] source [source ...]"
+}
+
+SOURCES=
+
+BATCH_SIZE=1
+STEPS=1
+EPOCHS=1
+
+while [ $# -ge 1 ]
+do
+  case "$1" in
+    --batch)
+      BATCH_SIZE=$2
+      shift 2
+      ;;
+    --steps)
+      STEPS=$2
+      shift 2
+      ;;
+    --epochs)
+      EPOCHS=$2
+      shift 2
+      ;;
+    *)
+      SOURCES=$@
+      shift $#
+      ;;
+  esac
+done
+if [ $# -gt 0 -o "x$SOURCES" = "x" ]
+then
+  usage
+  exit 1
+fi
+
+
+python3 src/run.py tfrlist \
+  --batch $BATCH_SIZE \
+  --steps $STEPS \
+  --epochs $EPOCHS \
+  $SOURCES

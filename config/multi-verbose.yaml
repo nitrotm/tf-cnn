@@ -1,0 +1,17 @@
+name: topologies
+global:
+  topology: topologies/unet3c.yaml
+  initializer: he_normal
+  activation: crelu
+  loss: jaccard
+  optimizer: nadam
+  learning_rate: 0.001
+  learning_rate_decay: none
+  batch_size: 10
+  steps: 1000
+  epochs: 1
+dataset:
+  train: dataset/medium20n-256x256-train.tfr
+  eval: dataset/medium20n-256x256-eval.tfr
+models:
+  default: {}
